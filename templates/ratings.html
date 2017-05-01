@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>
+    Restaurants I've Visited:
+</h2>
+
+<ul>
+    {% for food in foods %}
+    <li>
+        <h3>{{ food.name }}</h3>
+        <form action="/ratings" method="post">
+            <label>
+                My Rating:
+                <input name="rating" type="number" min="0" max="10" value={{ food.rating }} />
+            </label>
+
+            <input type="hidden" name="food" value="{{ food.key().id() }}"/>
+            <input type="submit" value="Rate it!"/>
+            </form>
+            </li>
+{% endfor %}
+</ul>
+{% endblock %}

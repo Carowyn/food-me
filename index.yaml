@@ -10,3 +10,10 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: Food
+  properties:
+  - name: visited
+  - name: rating
+    direction: desc
+  - name: datetime_visited
+    direction: desc

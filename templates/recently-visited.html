@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Recently Visited Restaurants:</h2>
+
+    {% for food in recently_visited_food %}
+
+    <p><strong>{{ food.owner.username }}</strong> visited <em>{{ food.name }}</em>, and gave it a rating of <strong>{{ food.rating }}</strong>.<p>
+
+    {% endfor %}
+
+{% endblock %}

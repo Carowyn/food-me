@@ -44,9 +44,10 @@ class Food(db.Model):
     rating = db.StringProperty()
     owner = db.ReferenceProperty(User, required = True)
 
-class Handler (webapp2.RequestHandler):
+class Handler(webapp2.RequestHandler):
     """ The base RequestHandler class for this app. The other Handlers inherit
     from this one. """
+
     def renderError(self, error_code):
         """ Sends an HTTP error code and a generic message to the client. """
         self.error(error_code)
@@ -57,17 +58,21 @@ class Handler (webapp2.RequestHandler):
         user_id = user.key().id()
         self.set_secure_cookie('user_id', str(user_id))
 
+    def logout_user(self):
+        """ Logs out the current user """
+        self.set_secure_cookie('user_id', '')
+
     def read_secure_cookie(self, name):
         """ Returns the value associated with a name in the user's cookie or
         returns None if no value was found (or not valid). """
-        cookie val = self.request.cookies.get(name)
+        cookie_val = self.request.cookies.get(name)
         if cookie_val:
             return hashutils.check_secure_val(cookie_val)
 
     def set_secure_cookie(self, name, val):
         """ Adds a secure name-value pair cookie to the response. """
         cookie_val = hashutils.make_secure_val(val)
-        self.response.headers.add_header('Set-Cookie', '%s=%s; Path=/' % (name, cookie-val))
+        self.response.headers.add_header('Set-Cookie', '%s=%s; Path=/' % (name, cookie_val))
 
     def initialize(self, *a, **kw):
         """ Any subclass of webapp2.RequestHandler can implement this method to
@@ -75,7 +80,6 @@ class Handler (webapp2.RequestHandler):
 
         This time its used to make sure a user is logged in. If the user is not logged
         in then they are redirected to the /login page. """
-
         webapp2.RequestHandler.initialize(self, *a, **kw)
         uid = self.read_secure_cookie('user_id')
         self.user = uid and User.get_by_id(int(uid))
@@ -84,11 +88,11 @@ class Handler (webapp2.RequestHandler):
             self.redirect('/login')
             return
 
-        def get_user_by_name(self, username):
-            """ Try to fetch the user from the database when given a username. """
-            user = db.GqlQuery("SELECT * from User WHERE username = '%s'" % username)
-            if user:
-                return user.get()
+    def get_user_by_name(self, username):
+        """ Given a username, try to fetch the user from the database """
+        user = db.GqlQuery("SELECT * from User WHERE username = '%s'" % username)
+        if user:
+            return user.get()
 
 class Index(Handler):
     """ Handles the requests coming into '/'. """
@@ -98,9 +102,10 @@ class Index(Handler):
         query = Food.all().filter("owner", self.user).filter("visited", False)
         unvisited_food = query.run()
 
+
         t = jinja_env.get_template("frontpage.html")
         content = t.render(
-                        movies = unwatched_movies,
+                        foods = unvisited_food,
                         error = self.request.get("error"))
         self.response.write(content)
 
@@ -158,11 +163,11 @@ class FoodRatings(Handler):
     def get(self):
         """ Show a list of the restaurants the user has already visited. """
         # query for restaurants that the user has already visited
-        query = Food.all()filter("owner", self.user).filter("visited", True)
+        query = Food.all().filter("owner", self.user).filter("visited", True)
         visited_food = query.run()
 
         t = jinja_env.get_template("ratings.html")
-        content = t.render(food = visited_food)
+        content = t.render(foods = visited_food)
         self.response.write(content)
 
     def post(self):
@@ -193,7 +198,7 @@ class RecentlyVisitedFood(Handler):
 
         # query for visited movies (by any user), sorted by how high the movie was rated and how
         # recently the restaurant was visited
-        query = Food.all().filter("visited", True).order("-rating", "-datetime_visited")
+        query = Food.all().filter("visited", True).order("-rating").order("-datetime_visited")
         # get the first 25 results
         recently_visited_food = query.fetch(limit = 25)
 
@@ -212,14 +217,14 @@ class Login(Handler):
         self.render_login_form()
 
     def post(self):
-        """ User is trying to login. """
+        """ User is trying to log in. """
         submitted_username = self.request.get("username")
         submitted_password = self.request.get("password")
 
-        user = self.get_user_by_name(submitter_username)
+        user = self.get_user_by_name(submitted_username)
         if not user:
             self.render_login_form(error = "Invalid Username!")
-        elif not hashutils.valid_pw(submitted_username, submitted_password, user.pw.hash):
+        elif not hashutils.valid_pw(submitted_username, submitted_password, user.pw_hash):
             self.render_login_form(error = "Invalid Password!")
         else:
             self.login_user(user)
@@ -243,8 +248,8 @@ class Register(Handler):
             return ""
 
     def validate_password(self, password):
-        """ Returns the password string if it is valid, if not then returns an empty string. """
-        PWD_RD = re.compile(r"^.{5,20}$")
+        """ Display the registration page. """
+        PWD_RE = re.compile(r"^.{5,20}$")
         if PWD_RE.match(password):
             return password
         else:
@@ -276,12 +281,12 @@ class Register(Handler):
         has_error = False
 
         if existing_user:
-            errors['username_error'] = "A user with that Username already exists!"
+            errors['username_error'] = "That username already exists!"
             has_error = True
         elif (username and password and verify):
             # create new user object
             pw_hash = hashutils.make_pw_hash(username, password)
-            user = User(username = username, pw_hash = pw_hash)
+            user = User(username=username, pw_hash=pw_hash)
             user.put()
 
             self.login_user(user)
@@ -299,11 +304,10 @@ class Register(Handler):
 
         if has_error:
             t = jinja_env.get_template("register.html")
-            content = t.render(username = username, errors = errors)
+            content = t.render(username=username, errors=errors)
             self.response.out.write(content)
         else:
             self.redirect('/')
-
 
 app = webapp2.WSGIApplication([
     ('/', Index),

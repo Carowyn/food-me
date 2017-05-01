@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>
+    Restaurants I want to Visit:
+</h2>
+
+<ul>
+{% for food in foods %}
+    <li>
+        <form action="/visited-it" method="post">
+            {{ food.name }}s
+            <input type="hidden" name="visited-food" value="{{ food.key().id() }}"/>
+            <input type="submit" value="I Went There!"/>
+        </form>
+    </li>
+{% endfor %}
+</ul>
+
+<form action="/add" method="post">
+    <label>
+        I want to visit
+        <input type="text" name="new-food"/>
+    </label>
+    <input type="submit" value="Add it to My List"/>
+</form>
+
+<p class="error">{{ error if error else "" }}</p>
+
+{% endblock %}
