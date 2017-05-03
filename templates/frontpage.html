@@ -9,7 +9,7 @@
 {% for food in foods %}
     <li>
         <form action="/visited-it" method="post">
-            {{ food.name }}s
+            {{ food.name }}
             <input type="hidden" name="visited-food" value="{{ food.key().id() }}"/>
             <input type="submit" value="I Went There!"/>
         </form>
@@ -19,10 +19,16 @@
 
 <form action="/add" method="post">
     <label>
-        I want to visit
-        <input type="text" name="new-food"/>
+        I want to visit:
+        <input type="text" id="new-food" name="new-food"/>
+        <br>
+        City, ST:<input type="text" id="city" name="city"/>, <input type="text" id="state" name="state" maxlength="2"/>
+        <br>
+         | OR |
+         <br>
+         Zip Code:<input type="number" id="zip" name="zip" maxlength="5"/>
     </label>
-    <input type="submit" value="Add it to My List"/>
+    <input type="submit" id="add-it" value="Add it to My List"/>
 </form>
 
 <p class="error">{{ error if error else "" }}</p>

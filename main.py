@@ -202,8 +202,26 @@ class RecentlyVisitedFood(Handler):
         # get the first 25 results
         recently_visited_food = query.fetch(limit = 25)
 
+
+
         t = jinja_env.get_template("recently-visited.html")
-        content = t.render(recently_visited_food = recently_visited_food)
+        content = t.render(recently_visited_foods = recently_visited_food)
+        self.response.write(content)
+
+class UserVisitedFood(Handler):
+    """ Handles request coming into '/user-visited'. """
+
+    def get(self):
+        """ Display a list of restaurants that have recently been highly rated (by any user). """
+
+        # query for visited movies (by any user), sorted by how high the movie was rated and how
+        # recently the restaurant was visited
+        query = Food.all().filter("owner", self.user).filter("visited", True).order("-rating").order("-datetime_visited")
+        # get the first 25 results
+        user_visited_food = query.fetch(limit = 25)
+
+        t = jinja_env.get_template("user-page.html")
+        content = t.render(user_visited_foods = user_visited_food)
         self.response.write(content)
 
 class Login(Handler):
@@ -315,6 +333,7 @@ app = webapp2.WSGIApplication([
     ('/visited-it', VisitedFood),
     ('/ratings', FoodRatings),
     ('/recently-visited', RecentlyVisitedFood),
+    ('/user-visited', UserVisitedFood),
     ('/login', Login),
     ('/logout', Logout),
     ('/register', Register)

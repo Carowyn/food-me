@@ -4,10 +4,19 @@
 
 <h2>Recently Visited Restaurants:</h2>
 
-    {% for food in recently_visited_food %}
+    {% for food in recently_visited_foods %}
 
-    <p><strong>{{ food.owner.username }}</strong> visited <em>{{ food.name }}</em>, and gave it a rating of <strong>{{ food.rating }}</strong>.<p>
+    <p><strong>{{ food.owner.username }}</strong> visited <em>{{ food.name }}</em>,
 
+    {% if food.rating == None %}
+
+    but hasn't rated it yet.</p>
+
+    {% else %}
+
+    and rated it <strong>{{ food.rating }}</strong>.</p>
+
+    {% endif %}
     {% endfor %}
 
 {% endblock %}

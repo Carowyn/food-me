@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>
+    {% food.owner.username %}
+</h1>
+
+{% for food in user_visited_foods %}
+
+<p><em>{{ food.name }}</em>:
+
+{% if food.rating == None %}
+
+ hasn't been rated yet.</p>
+
+{% else %}
+
+was rated <strong>{{ food.rating }}</strong>.</p>
+
+{% endif %}
+{% endfor %}
+
+{% endblock %}
+        

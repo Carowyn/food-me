@@ -12,7 +12,7 @@
         <form action="/ratings" method="post">
             <label>
                 My Rating:
-                <input name="rating" type="number" min="0" max="10" value={{ food.rating }} />
+                <input name="rating" type="number" max="10" value={{ food.rating }} maxlength="2"/>
             </label>
 
             <input type="hidden" name="food" value="{{ food.key().id() }}"/>
