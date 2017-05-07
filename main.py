@@ -74,6 +74,10 @@ class Handler(webapp2.RequestHandler):
         cookie_val = hashutils.make_secure_val(val)
         self.response.headers.add_header('Set-Cookie', '%s=%s; Path=/' % (name, cookie_val))
 
+    def set_header(self):
+        """ Attempt at adding the correct heading to stop an error """
+        self.response.headers.send_header("Access-Control-Allow-Origin", "*")
+
     def initialize(self, *a, **kw):
         """ Any subclass of webapp2.RequestHandler can implement this method to
         specify what should happen before handling a request.
@@ -101,7 +105,6 @@ class Index(Handler):
         """ Display the homepage (with the list of places the user wants to visit). """
         query = Food.all().filter("owner", self.user).filter("visited", False)
         unvisited_food = query.run()
-
 
         t = jinja_env.get_template("frontpage.html")
         content = t.render(
